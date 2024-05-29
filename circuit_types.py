@@ -20,5 +20,5 @@ class QuantumGate(Enum):
 class Gate:
     def __init__(self, index, gate_type, wires):
         self.index = index
-        self.type = gate_type
+        self.gate_type = gate_type
         self.wires = wires

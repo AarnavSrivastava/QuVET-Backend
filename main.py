@@ -4,11 +4,17 @@ from flask_restful import Resource, Api
 
 from circuit_types import Gate, QuantumGate, Wire
 
-# creating the flask app 
+import pennylane as qml
+import numpy as np
+import json
+
+dev = qml.device("default.qubit", wires=10)
+
+# creating the flask app
 app = Flask(__name__)
 # creating an API object 
 api = Api(app)
-  
+
 # making a class for a particular resource 
 # the get, post methods correspond to get and post requests 
 # they are automatically mapped by flask_restful. 
@@ -30,9 +36,36 @@ class Running(Resource):
 #     def get(self, num): 
 #         return jsonify({'square': num**2}) 
 
+@qml.qnode(dev)
+def run_circuit(wires):
+    for i in range(len(wires)):
+        w = wires[i]
+
+        gates = w.gates
+
+        for gate in gates:
+            if gate.gate_type == QuantumGate.X:
+                qml.PauliX(wires=i)
+            elif gate.gate_type == QuantumGate.Y:
+                qml.PauliY(wires=i)
+            elif gate.gate_type == QuantumGate.Z:
+                qml.PauliZ(wires=i)
+            elif gate.gate_type == QuantumGate.H:
+                qml.Hadamard(wires=i)
+            elif gate.gate_type == QuantumGate.S:
+                qml.S(wires=i)
+            elif gate.gate_type == QuantumGate.T:
+                qml.T(wires=i)
+    
+    return qml.probs([i for i in range(len(wires))])
+    # return qml.state()
+
 class Circuit(Resource):
     def post(self):
         data = request.get_json()
+
+        if (isinstance(data, str)):
+            data = json.loads(data)
 
         wires = []
 
@@ -45,10 +78,10 @@ class Circuit(Resource):
             
             wire = Wire(len(wires), gates)
             wires.append(wire)
-        
-        
-        
-        return make_response(jsonify({'data': len(wires)}), 201)
+
+        probs = run_circuit(wires)
+
+        return make_response(jsonify({'probabilities': probs.numpy().tolist()}), 201)
   
 # adding the defined resources along with their corresponding urls 
 api.add_resource(Running, '/') 
