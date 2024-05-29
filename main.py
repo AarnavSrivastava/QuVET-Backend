@@ -62,8 +62,6 @@ def plotter(angles, output_states, bgcolor='#86acb5', output_file='plot.png'):
 
 @qml.qnode(dev)
 def run_circuit_probs(wires):
-    dev = qml.device("default.qubit", wires=len(wires))
-
     for i in range(len(wires)):
         w = wires[i]
 
@@ -88,8 +86,6 @@ def run_circuit_probs(wires):
 
 @qml.qnode(dev)
 def run_circuit_state(wires):
-    dev = qml.device("default.qubit", wires=len(wires))
-
     for i in range(len(wires)):
         w = wires[i]
 
